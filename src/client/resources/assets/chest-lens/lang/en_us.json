@@ -1,0 +1,9 @@
+{
+  "key.category.chest-lens.main": "Chest Lens",
+  "gui.chest-lens.search_hint": "Search storage…",
+  "key.chest-lens.focus_search": "Focus storage search",
+  "key.chest-lens.toggle_search": "Show or hide storage search",
+  "key.chest-lens.toggle_tooltip_search": "Toggle tooltip search",
+  "message.chest-lens.tooltip_search_on": "Chest Lens: tooltip search enabled",
+  "message.chest-lens.tooltip_search_off": "Chest Lens: tooltip search disabled"
+}

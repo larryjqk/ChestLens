@@ -1,0 +1,23 @@
+{
+	"schemaVersion": 1,
+	"id": "chest-lens",
+	"version": "${version}",
+	"name": "Chest Lens",
+	"description": "Client-side storage search that highlights matching items .",
+	"authors": [],
+	"license": "CC0-1.0",
+	"icon": "assets/chest-lens/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"com.larryjqk.chestlens.client.ChestLensClient"
+		]
+	},
+	"mixins": ["chest-lens.client.mixins.json"],
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
