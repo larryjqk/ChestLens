@@ -9,6 +9,7 @@ import com.larryjqk.chestlens.client.mixin.AbstractContainerScreenAccessor;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.KeyEvent;
@@ -25,10 +26,15 @@ import java.util.Map;
 
 public class ChestLensClient implements ClientModInitializer {
 	private static final int SLOT_SIZE = 16;
+	private static final int BOX_WIDTH = 160;
+	private static final int BUTTON_SIZE = 20;
+
 	private static String query = "";
 	private static boolean searchBarVisible = true;
 	private static boolean searchTooltips = true;
+
 	private static EditBox activeSearchBox;
+	private static Button activeClearButton;
 	private static KeyMapping focusSearchKey;
 	private static KeyMapping toggleSearchKey;
 	private static KeyMapping toggleTooltipSearchKey;
@@ -49,21 +55,40 @@ public class ChestLensClient implements ClientModInitializer {
 			matchCache.clear();
 			if (!(screen instanceof AbstractContainerScreen<?> container) || !isStorageScreen(container)) {
 				activeSearchBox = null;
+				activeClearButton = null;
 				return;
 			}
 			AbstractContainerScreenAccessor accessor = (AbstractContainerScreenAccessor) container;
-			SearchBox box = new SearchBox(client, screen.width / 2 - 90, accessor.chestLens$getTopPos() - 24, 180, 20);
+			int boxX = screen.width / 2 - (BOX_WIDTH + BUTTON_SIZE) / 2;
+			int boxY = accessor.chestLens$getTopPos() - 24;
+
+			SearchBox box = new SearchBox(client, boxX, boxY, BOX_WIDTH, 20);
 			box.setMaxLength(128);
 			box.setValue(query);
-			box.setVisible(searchBarVisible);
 			box.setHint(Component.translatable("gui.chest-lens.search_hint"));
-			box.setResponder(value -> query = value);
 			box.setFocused(false);
+
+			Button clear = Button.builder(Component.literal("x"), b -> box.setValue(""))
+					.bounds(boxX + BOX_WIDTH, boxY, BUTTON_SIZE, BUTTON_SIZE)
+					.build();
+
+			box.setResponder(value -> {
+				query = value;
+				clear.active = !value.isEmpty();
+			});
+			clear.active = !query.isEmpty();
+
+			box.setVisible(searchBarVisible);
+			clear.visible = searchBarVisible;
+
 			Screens.getWidgets(screen).add(box);
+			Screens.getWidgets(screen).add(clear);
 			activeSearchBox = box;
+			activeClearButton = clear;
 
 			ScreenEvents.remove(screen).register(s -> {
 				if (activeSearchBox == box) activeSearchBox = null;
+				if (activeClearButton == clear) activeClearButton = null;
 			});
 		});
 	}
@@ -72,6 +97,11 @@ public class ChestLensClient implements ClientModInitializer {
 		if (!isStorageScreen(screen)) return false;
 
 		if (isSearchFocused()) {
+			if (event.key() == InputConstants.KEY_ESCAPE) {
+				activeSearchBox.setFocused(false);
+				screen.setFocused(null);
+				return true;
+			}
 			if (toggleSearchKey.matches(event)) {
 				setSearchBarVisible(screen, false);
 				return true;
@@ -80,6 +110,7 @@ public class ChestLensClient implements ClientModInitializer {
 				toggleTooltipSearch();
 				return true;
 			}
+
 			activeSearchBox.keyPressed(event);
 			return true;
 		}
@@ -107,6 +138,7 @@ public class ChestLensClient implements ClientModInitializer {
 		searchBarVisible = visible;
 		if (activeSearchBox == null) return;
 		activeSearchBox.setVisible(visible);
+		if (activeClearButton != null) activeClearButton.visible = visible;
 		if (!visible) {
 			activeSearchBox.setFocused(false);
 			screen.setFocused(null);
@@ -130,21 +162,11 @@ public class ChestLensClient implements ClientModInitializer {
 
 		for (int i = 0; i < storageSlots; i++) {
 			Slot slot = container.getMenu().slots.get(i);
-			if (!slot.isActive()) continue;
+			if (!slot.isActive() || slot == hovered) continue;
+			if (matches(slot, Minecraft.getInstance(), query)) continue;
 			int x = left + slot.x;
 			int y = top + slot.y;
-			boolean matched = matches(slot, Minecraft.getInstance(), query);
-
-			if (!matched) {
-				if (slot != hovered) graphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, 0xAA000000);
-				continue;
-			}
-			graphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, 0x24FFFFFF);
-			int glow = 0xCC65DFFF;
-			graphics.fill(x, y, x + SLOT_SIZE, y + 1, glow);
-			graphics.fill(x, y + SLOT_SIZE - 1, x + SLOT_SIZE, y + SLOT_SIZE, glow);
-			graphics.fill(x, y, x + 1, y + SLOT_SIZE, glow);
-			graphics.fill(x + SLOT_SIZE - 1, y, x + SLOT_SIZE, y + SLOT_SIZE, glow);
+			graphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, 0xAA000000);
 		}
 	}
 
@@ -181,16 +203,6 @@ public class ChestLensClient implements ClientModInitializer {
 	private static final class SearchBox extends EditBox {
 		private SearchBox(Minecraft client, int x, int y, int width, int height) {
 			super(client.font, x, y, width, height, Component.translatable("gui.chest-lens.search_hint"));
-		}
-
-		@Override
-		public boolean keyPressed(KeyEvent event) {
-			if (event.key() == InputConstants.KEY_ESCAPE && isFocused()) {
-				if (!getValue().isEmpty()) setValue("");
-				else setFocused(false);
-				return true;
-			}
-			return super.keyPressed(event);
 		}
 	}
 }
