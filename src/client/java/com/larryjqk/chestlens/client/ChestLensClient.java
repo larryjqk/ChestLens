@@ -68,7 +68,6 @@ public class ChestLensClient implements ClientModInitializer {
 		});
 	}
 
-	/** Trả về true nếu phím đã được xử lý (khi đó vanilla sẽ KHÔNG xử lý nữa). */
 	public static boolean handleKey(AbstractContainerScreen<?> screen, KeyEvent event) {
 		if (!isStorageScreen(screen)) return false;
 
