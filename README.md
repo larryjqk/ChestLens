@@ -63,7 +63,7 @@ Chest Lens is purely client-side. Install it on the client only; it works on any
 ## Building from source
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/larryjqk/ChestLens.git
 cd chest-lens
 ./gradlew build        # on Windows: gradlew.bat build
 ```
