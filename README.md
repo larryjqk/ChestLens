@@ -46,10 +46,10 @@ For example, `aqua` finds an *Aqua Affinity* enchanted book, and `sword` finds e
 
 ## Requirements
 
-- Minecraft: *(fill in the supported version)*
-- Fabric Loader: *(fill in the minimum version)*
+- Minecraft: *From 1.21.11-26.3 (Depends on what release you choose)*
+- Fabric Loader: *At least 0.19.5*
 - Fabric API
-- Java: *(fill in the required version)*
+- Java: *At least Java 21*
 
 Chest Lens is purely client-side. Install it on the client only; it works on any server, including vanilla ones, and does not need to be installed on the server.
 
